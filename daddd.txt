@@ -1,0 +1,557 @@
+#include <fstream>
+#include <thread>
+#include <cwchar>
+#include <iostream>
+#include <curses.h> 
+#include <windows.h>
+#include <string> 
+#include <time.h>
+#include <future>
+
+int alive=0;
+
+
+using namespace std;
+using namespace std::this_thread;
+void get_color();
+void MoveCharUp(WINDOW* win, int& y, int& x, char tab[][15], int& count);
+void MoveCharRight(WINDOW* win, int y, int& x, char tab[][15], int& count);
+void MoveCharUpRight(WINDOW* win, int& y, int& x, char tab[][15], int& count);
+void MoveCharUpLeft(WINDOW* win, int& y, int& x, char tab[][15], int& count);
+void MoveCharLeft(WINDOW* win, int y, int& x, char tab[][15], int& count);
+
+void ShowFireworks1(int x, int y)
+{
+    get_color();
+    mvaddstr(y - 1, x, "  - ");
+    mvaddstr(y, x, " -+- ");
+    mvaddstr(y + 1, x, "  - ");
+    
+}
+void ShowFireworks2(int x, int y)
+{
+    get_color();
+    mvaddstr(y - 2, x, " --- ");
+    mvaddstr(y - 1, x, "-+++-");
+    mvaddstr(y, x, "-+#+-");
+    mvaddstr(y + 1, x, "-+++-");
+    mvaddstr(y + 2, x, " --- ");
+}
+void ShowFireworks3(int x, int y)
+{
+    get_color();
+    mvaddstr(y - 2, x, " +++ ");
+    mvaddstr(y - 1, x, "++#++");
+    mvaddstr(y, x, "+# #+");
+    mvaddstr(y + 1, x, "++#++");
+    mvaddstr(y + 2, x, " +++ ");
+}
+void ShowFireworks4(int x, int y)
+{
+    get_color();
+    mvaddstr(y - 2, x, "  #  ");
+    mvaddstr(y - 1, x, "## ##");
+    mvaddstr(y, x, "#   #");
+    mvaddstr(y + 1, x, "## ##");
+    mvaddstr(y + 2, x, "  #  ");
+}
+void ShowFireworks5(int x, int y)
+{
+    get_color();
+    mvaddstr(y - 2, x, " # # ");
+    mvaddstr(y - 1, x, "#   #");
+    mvaddstr(y, x, "     ");
+    mvaddstr(y + 1, x, "#   #");
+    mvaddstr(y + 2, x, " # # ");
+}
+void get_color(void)
+{
+    chtype bold = (rand() % 2) ? A_BOLD : A_NORMAL;
+    attrset(COLOR_PAIR(rand() % 8) | bold);
+}
+short color_table[] =
+{
+    COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN,
+    COLOR_RED, COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE
+};
+
+void PlayMusic()
+{
+    ifstream wej("backgroundmusic.txt");
+
+    int i, j;
+    int MusicArray[100][3];
+
+    for (i = 0; i < 100; i++)
+    {
+        for (j = 0; j < 3; j++)
+        {
+            wej >> MusicArray[j][i];
+        }
+    }
+  
+        for (i = 0; i < 100; i++)
+        {
+            if (alive != 0)
+            {
+                break;
+            }
+            Beep(MusicArray[i][0], MusicArray[i][1]);
+            std::this_thread::sleep_for(std::chrono::milliseconds(MusicArray[i][2]));
+        }
+    
+}
+
+void PlayFinishMusic()
+{
+    Beep(330, 100); Sleep(100);
+    Beep(330, 100); Sleep(300);
+    Beep(330, 100); Sleep(300);
+    Beep(262, 100); Sleep(100);
+    Beep(330, 100); Sleep(300);
+    Beep(392, 100); Sleep(700);
+    Beep(196, 100); Sleep(700);
+    Beep(196, 100); Sleep(125);
+    Beep(262, 100); Sleep(125);
+    Beep(330, 100); Sleep(125);
+    Beep(392, 100); Sleep(125);
+    Beep(523, 100); Sleep(125);
+    Beep(660, 100); Sleep(125);
+    Beep(784, 100); Sleep(575);
+    Beep(660, 100); Sleep(575);
+    Beep(207, 100); Sleep(125);
+    Beep(262, 100); Sleep(125);
+    Beep(311, 100); Sleep(125);
+    Beep(415, 100); Sleep(125);
+    Beep(523, 100); Sleep(125);
+    Beep(622, 100); Sleep(125);
+    Beep(830, 100); Sleep(575);
+    Beep(622, 100); Sleep(575);
+    Beep(233, 100); Sleep(125);
+    Beep(294, 100); Sleep(125);
+    Beep(349, 100); Sleep(125);
+    Beep(466, 100); Sleep(125);
+    Beep(587, 100); Sleep(125);
+    Beep(698, 100); Sleep(125);
+    Beep(932, 100); Sleep(575);
+    Beep(932, 100); Sleep(125);
+    Beep(932, 100); Sleep(125);
+    Beep(932, 100); Sleep(125);
+    Beep(1046, 675);
+}
+void ShowFireworks()
+{
+    int fx1 = 19, fy1 = 14, fx2 = 90, fy2 = 12, fx3 = 13, fy3 = 18;
+    while (1)
+    {
+        ShowFireworks1(fx1, fy1);
+        Sleep(50);
+        refresh();
+        ShowFireworks2(fx1, fy1);
+        ShowFireworks1(fx2, fy2);
+        Sleep(50);
+        refresh();
+        ShowFireworks3(fx1, fy1);
+        ShowFireworks2(fx2, fy2);
+        Sleep(50);
+        refresh();
+        ShowFireworks4(fx1, fy1);
+        ShowFireworks3(fx2, fy2);
+        Sleep(50);
+        refresh();
+        ShowFireworks5(fx1, fy1);
+        ShowFireworks4(fx2, fy2);
+        Sleep(50);
+        refresh();
+        ShowFireworks5(fx2, fy2);
+        Sleep(50);
+        refresh();
+    }
+}
+void PlayFinishSong(WINDOW* win)
+{
+    alive = 0;
+    thread fireworkthread(ShowFireworks);
+    thread musicthread(PlayFinishMusic);
+    int i;
+    if (has_colors())
+        start_color();
+
+    for (i = 0; i < 8; i++)
+        init_pair(i, color_table[i], COLOR_BLACK);
+    werase(win);
+
+    box(win, 0, 0);
+    waddstr(win,"The End");
+    mvwaddstr(win, 2, 30, "CONGRATULATIONS!");
+    wrefresh(win);
+
+    musicthread.join();
+    fireworkthread.join();
+    
+}
+bool DetectPlatform(WINDOW* win, int y, int x, char tab[][15], int count)
+{
+
+    if (tab[count-80 +x][y] == 'O')
+    {
+        return true;
+    }
+
+        if (tab[count - 80 + x][y] == '*')
+        {
+            PlayFinishSong(win);
+        }
+
+        if (tab[count - 80 + x][y] == 'X')
+        {
+            Sleep(300);
+            return true;
+        }
+        return false;
+    
+
+
+}
+bool CharStanding(WINDOW* win, int y, int x, char tab[][15], int count)
+{
+    if (y == 11)
+    {
+        return true;
+    }
+}
+void DrawMap(WINDOW* win, char tab[][15], int count)
+{
+    int i, j;
+    if (count == 80)
+    {
+        for (i = 0; i < 15; i++)
+        {
+            for (j = 0; j <= 80; j++)
+            {
+                mvwaddch(win, i, j, tab[j][i]);
+            }
+        }
+    }
+}
+void MoveMap(WINDOW* win, char tab[][15], int& count)
+{
+    count++;
+    int i;
+    for (i = 0; i <= 15; i++)
+    {
+        mvwdelch(win, i, 2);
+    }
+    for (i = 0; i < 15; i++)
+    {
+        mvwaddch(win, i, 80, tab[count][i]);
+    }
+}
+void MoveCharUpLeft(WINDOW* win, int& y, int& x, char tab[][15], int& count)
+{
+    int i;
+    char key;
+    for (i = 0; i < 6; i++)
+    {
+        if (DetectPlatform(win, y - 1, x - 1, tab, count) == true)
+        {
+            break;
+        }
+        MoveCharLeft(win, y, x, tab, count);
+        y = y - 1;
+        mvwaddch(win, y, x, 'G');
+        mvwaddch(win, y + 1, x, tab[count - 80 + x][y+1]);
+        wrefresh(win);
+        Sleep(20);
+    }
+    while (y < 11)
+    {
+        if (DetectPlatform(win, y + 1, x - 1, tab, count) == true)
+        {
+            break;
+        }
+        MoveCharLeft(win, y, x, tab, count);
+        y = y + 1;
+        mvwaddch(win, y, x, 'G');
+        mvwaddch(win, y - 1, x, tab[count - 80 + x][y - 1]);
+        wrefresh(win);
+        Sleep(20);
+    }
+}
+void MoveCharUpRight(WINDOW* win, int& y, int& x, char tab[][15], int& count)
+{
+    int i;
+    char key;
+    for (i = 0; i < 6; i++)
+    {
+        if (DetectPlatform(win, y - 1, x + 1, tab, count) == true)
+        {
+            break;
+        }
+        MoveCharRight(win, y, x, tab, count);
+        y = y - 1;
+        mvwaddch(win, y, x, 'G');
+        mvwaddch(win, y + 1, x, tab[count - 80 + x][y+1]);
+        wrefresh(win);
+        Sleep(20);
+    }
+    while(y<11)
+    {
+        if (DetectPlatform(win, y + 1, x + 1, tab, count) == true)
+        {
+            break;
+        }
+        MoveCharRight(win, y, x, tab, count);
+        y = y + 1;
+        mvwaddch(win, y, x, 'G');
+        mvwaddch(win, y - 1, x, tab[count - 80 + x][y-1]);
+        wrefresh(win);
+        Sleep(20);   
+    }
+}
+void MoveCharRight(WINDOW* win, int y,int& x, char tab[][15],int& count)
+{
+    char key;
+    if (DetectPlatform(win, y, x +1, tab, count) == true)
+    {
+        return;
+    }
+    if (x < 20)
+    {
+        x = x + 1;
+    }
+    else
+    {
+        MoveMap(win, tab, count);
+    }
+    mvwaddch(win, y, x, 'G');
+    mvwaddch(win, y , x-1, tab[count - 80 + x - 1][y]);
+    Sleep(10);
+}
+void MoveCharLeft(WINDOW* win, int y, int& x, char tab[][15], int& count)
+{
+    char key;
+    if (x > 3)
+    {
+        if (DetectPlatform(win, y, x-1, tab, count) == true)
+        {
+            return;
+        }
+        x = x - 1;
+        mvwaddch(win, y, x, 'G');
+        mvwaddch(win, y, x+1, tab[count - 80 + x + 1][y]);
+        Sleep(10);
+    }
+}
+void CharFalling(WINDOW* win, int& y, int& x, char tab[][15], int& count)
+{
+    char key;
+    while (y < 11)
+    {
+        if (DetectPlatform(win, y + 1, x, tab, count) == true)
+        {
+            break;
+        }
+        timeout(3);
+        key = getch();
+        if (key == 'd')
+        {
+            if (DetectPlatform(win, y + 1, x + 1, tab, count) == true)
+            {
+                break;
+            }
+            MoveCharRight(win, y, x, tab, count);
+        }
+        if (key == 'a')
+        {
+            if (DetectPlatform(win, y + 1, x - 1, tab, count) == true)
+            {
+                break;
+            }
+            MoveCharLeft(win, y, x, tab, count);
+        }
+        y = y + 1;
+        mvwaddch(win, y, x, 'G');
+        mvwaddch(win, y - 1, x, tab[count - 80 + x][y - 1]);
+        wrefresh(win);
+        Sleep(10);
+    }
+}
+void MoveCharUp(WINDOW* win, int& y, int& x, char tab[][15], int& count)
+{
+    int i;
+    char key;
+        for (i = 0; i < 6; i++)
+        {
+            if (DetectPlatform(win, y - 1, x, tab, count) == true)
+            {
+                break;
+            }
+            timeout(3);
+            key = getch();
+            if (key == 'd')
+            {
+                if (DetectPlatform(win, y - 1, x+1, tab, count) == true)
+                {
+                    break;
+                }
+                MoveCharRight(win, y, x, tab, count);
+            }
+            if (key == 'a')
+            {
+                if (DetectPlatform(win, y - 1, x - 1, tab, count) == true)
+                {
+                    break;
+                }
+                MoveCharLeft(win, y, x, tab, count);
+            }           
+            y = y - 1;
+            mvwaddch(win, y, x, 'G');
+            mvwaddch(win, y + 1, x, tab[count-80+x][y + 1]);
+            wrefresh(win);
+            Sleep(10);
+        }
+        while (y < 11)
+        {
+            if (DetectPlatform(win, y + 1, x, tab, count) == true)
+            {
+                break;
+            }
+            timeout(3);
+            key = getch();
+            if (key == 'd')
+            {
+                if (DetectPlatform(win, y + 1, x + 1, tab, count) == true)
+                {
+                    break;
+                }
+                MoveCharRight(win, y, x, tab, count);
+            }
+            if (key == 'a')
+            {
+                if (DetectPlatform(win, y + 1, x - 1, tab, count) == true)
+                {
+                    break;
+                }
+                MoveCharLeft(win, y, x, tab, count);
+            }
+            y = y + 1;
+            mvwaddch(win, y, x, 'G');
+            mvwaddch(win, y - 1, x, tab[count - 80 + x][y - 1]);
+            wrefresh(win);
+            Sleep(10);
+        }
+}
+
+int main()
+{
+    char tab[1000][15];
+    ifstream wej("MAP.txt");
+    int count=80;
+    char key;
+    int i,j;
+
+
+    for (i = 0; i < 15; i++)
+    {
+        for (j = 0; j < 494; j++)
+        {
+            wej >> tab[j][i];
+        }
+    }
+    
+    // Wypisywanie tablicy
+        for (i = 0; i < 15; i++)
+    {
+        for (j = 0; j < 80; j++)
+        {
+            cout<<tab[j][i];
+        }
+        cout << endl;
+    }
+    
+        Sleep(200);
+    
+    initscr(); // rozpocznij tryb curses
+    refresh();
+    int yChar=11, xChar=14;
+    int xMax, yMax;
+    getmaxyx(stdscr, yMax, xMax);
+
+    WINDOW* win = newwin(15, 81, yMax/2-10, yMax/2);
+    box(win, 0, 0);
+    wrefresh(win);
+
+   // thread ostthread(PlayMusic);  //THREAD
+    
+    
+
+    DrawMap(win, tab, count);
+
+
+    future<void> backgroundthread= std::async(std::launch::async, PlayMusic);
+
+    while(1)
+    {        
+        if (DetectPlatform(win,yChar+1,xChar,tab,count) == false)
+        {
+            CharFalling(win, yChar, xChar, tab, count);
+            wrefresh(win);
+        }
+        
+        
+        key = getch(); // poczekaj na nacisniecie klawisza
+        if (key == 'd')
+        {
+            MoveCharRight(win, yChar,xChar, tab, count); 
+            wrefresh(win);
+        }
+        if (key == 'w')
+        { 
+            //yChar = yChar-1;
+            MoveCharUp(win, yChar, xChar,tab, count);
+            wrefresh(win);
+        }
+        if (key == 'e')
+        {
+           MoveCharUpRight(win, yChar,xChar, tab, count);
+           wrefresh(win);
+//hth
+
+        }
+        if (key == 'a')
+        {
+            MoveCharLeft(win, yChar, xChar, tab, count);  
+            wrefresh(win);
+        }
+        if (key == 'q')
+        {
+            MoveCharUpLeft(win, yChar, xChar, tab, count);
+            wrefresh(win);
+        }
+        
+    }
+    
+    //ostthread.join();  //THREAD
+    Sleep(300);
+
+
+    getch();
+
+   // move(1, 1); // przesun kursor do 10 wiersza i 10 kolumny
+    wechochar(stdscr, 'O');
+
+    
+
+    
+    
+
+    //refresh(); // przeladuj ekran, aby wyswietlic napis
+
+
+
+    beep();
+    endwin(); // zakoncz tryb curses
+
+    return 0;
+}
