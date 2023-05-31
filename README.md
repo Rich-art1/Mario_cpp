@@ -1,6 +1,7 @@
 # Mario_cpp
 Simple mario alike project created in C++ with ncurses library (spaghetti code)
 
+Suggested console's font: Lucida Console
 
 We are a controlling a single character and our goal is to obtain as many points (yellow stars) as possible.
 The game ends when we make it to the end of the map, or lose by touching a red diamond
